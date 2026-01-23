@@ -2,6 +2,8 @@
 
 Bash scripts for Linux server administration, security monitoring, and compliance auditing. Designed for RHEL/Fedora-family systems running Docker infrastructure.
 
+> **Related:** [docker-infrastructure](https://github.com/TheK3nsai/docker-infrastructure) - Self-hosted Docker infrastructure with Traefik, Authentik SSO, and shared databases
+
 ## Features
 
 | Category | Scripts | Description |
@@ -15,7 +17,7 @@ Bash scripts for Linux server administration, security monitoring, and complianc
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/server-ops-toolkit.git ~/ops
+git clone https://github.com/TheK3nsai/server-ops-toolkit.git ~/ops
 cd ~/ops
 
 # Copy and configure environment
