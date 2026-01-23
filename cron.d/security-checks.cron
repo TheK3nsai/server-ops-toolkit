@@ -1,0 +1,18 @@
+# Security monitoring cron jobs
+# Install: crontab -e  (then paste relevant lines)
+# Or place in /etc/cron.d/ with username field added
+
+# Check auth logs every hour (quiet mode - only alerts on issues)
+0 * * * * /home/kensai/ops/bin/check-auth-logs.sh --quiet >> /home/kensai/ops/logs/check-auth-logs.log 2>&1
+
+# Full auth log report daily at 6 AM
+0 6 * * * /home/kensai/ops/bin/check-auth-logs.sh >> /home/kensai/ops/logs/check-auth-logs.log 2>&1
+
+# Fail2ban status check every 15 minutes
+*/15 * * * * /home/kensai/ops/bin/fail2ban-status.sh --json >> /home/kensai/ops/logs/fail2ban-status.log 2>&1
+
+# Open ports audit daily at 7 AM
+0 7 * * * /home/kensai/ops/bin/open-ports-audit.sh >> /home/kensai/ops/logs/open-ports-audit.log 2>&1
+
+# Weekly detailed security report (Sundays at 8 AM)
+# 0 8 * * 0 /home/kensai/ops/bin/security-report.sh >> /home/kensai/ops/logs/security-report.log 2>&1

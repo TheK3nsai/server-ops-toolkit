@@ -1,0 +1,25 @@
+# Logs (contain potentially sensitive info)
+logs/
+*.log
+
+# Backups (contain system configurations)
+backups/
+
+# Environment file (contains secrets)
+conf/.env
+!conf/.env.example
+
+# Temp files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE settings
+.claude/
+.vscode/
+.idea/

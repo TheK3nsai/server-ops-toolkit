@@ -1,0 +1,17 @@
+# Compliance audit cron jobs
+# Install: crontab -e  (then paste relevant lines)
+
+# Daily login history report (7 days)
+0 7 * * * /home/kensai/ops/bin/login-history.sh --days 7 >> /home/kensai/ops/logs/login-history.log 2>&1
+
+# Weekly access audit report (Mondays at 8 AM)
+0 8 * * 1 /home/kensai/ops/bin/access-audit-report.sh --days 7 --output /home/kensai/ops/logs/access-audit-weekly-$(date +\%Y\%m\%d).txt 2>&1
+
+# Monthly compliance report (1st of month at 6 AM)
+0 6 1 * * sudo /home/kensai/ops/bin/access-audit-report.sh --days 30 --full --output /home/kensai/ops/logs/access-audit-monthly-$(date +\%Y\%m).txt 2>&1
+
+# Quarterly detailed audit (1st of Jan, Apr, Jul, Oct)
+0 6 1 1,4,7,10 * sudo /home/kensai/ops/bin/access-audit-report.sh --days 90 --full --output /home/kensai/ops/logs/access-audit-quarterly-$(date +\%Y\%m).txt 2>&1
+
+# Failed login monitoring (every 4 hours)
+0 */4 * * * /home/kensai/ops/bin/login-history.sh --days 1 --failed-only --json >> /home/kensai/ops/logs/failed-logins.json 2>&1

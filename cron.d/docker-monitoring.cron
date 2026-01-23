@@ -1,0 +1,17 @@
+# Docker monitoring cron jobs
+# Install: crontab -e  (then paste relevant lines)
+
+# Health check every 5 minutes
+*/5 * * * * /home/kensai/ops/bin/docker-health-check.sh --json >> /home/kensai/ops/logs/docker-health-check.log 2>&1
+
+# Resource report every hour
+0 * * * * /home/kensai/ops/bin/container-resource-report.sh >> /home/kensai/ops/logs/container-resource-report.log 2>&1
+
+# Resource report with alerts only (for notifications)
+*/15 * * * * /home/kensai/ops/bin/container-resource-report.sh --alert --json >> /home/kensai/ops/logs/container-alerts.log 2>&1
+
+# Weekly cleanup (Sundays at 3 AM) - dry run first week, then remove --dry-run
+0 3 * * 0 /home/kensai/ops/bin/docker-cleanup.sh --dry-run --force >> /home/kensai/ops/logs/docker-cleanup.log 2>&1
+
+# Daily image cleanup (remove images older than 30 days)
+# 0 4 * * * /home/kensai/ops/bin/docker-cleanup.sh --images --age 30 --force >> /home/kensai/ops/logs/docker-cleanup.log 2>&1

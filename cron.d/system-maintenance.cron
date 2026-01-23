@@ -1,0 +1,20 @@
+# System maintenance cron jobs
+# Install: crontab -e  (then paste relevant lines)
+
+# Disk usage check every 6 hours
+0 */6 * * * /home/kensai/ops/bin/disk-usage-alert.sh >> /home/kensai/ops/logs/disk-usage-alert.log 2>&1
+
+# Check for system updates daily at 6 AM
+0 6 * * * /home/kensai/ops/bin/system-updates.sh >> /home/kensai/ops/logs/system-updates.log 2>&1
+
+# Weekly update check with notification (Mondays at 7 AM)
+0 7 * * 1 /home/kensai/ops/bin/system-updates.sh --json >> /home/kensai/ops/logs/system-updates.log 2>&1
+
+# Daily config backup at 2 AM (compressed)
+0 2 * * * /home/kensai/ops/bin/backup-configs.sh --compress >> /home/kensai/ops/logs/backup-configs.log 2>&1
+
+# Full backup with sudo (weekly on Sundays at 1 AM)
+# 0 1 * * 0 sudo /home/kensai/ops/bin/backup-configs.sh --compress >> /home/kensai/ops/logs/backup-configs.log 2>&1
+
+# Log rotation for ops logs (weekly)
+0 0 * * 0 find /home/kensai/ops/logs -name "*.log" -size +10M -exec truncate -s 0 {} \;
