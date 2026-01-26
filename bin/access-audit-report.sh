@@ -62,6 +62,7 @@ while [[ $# -gt 0 ]]; do
             echo "  - Failed authentication attempts"
             echo "  - SSH key inventory"
             echo "  - System configuration changes"
+            echo "  - Security posture (SELinux, firewall, kernel hardening)"
             exit 0
             ;;
         *)
@@ -565,7 +566,145 @@ else
 fi
 
 # ----------------------------------------------------------------------------
-# 9. Findings Summary
+# 9. Security Configuration Posture
+# ----------------------------------------------------------------------------
+
+if ! $JSON_OUTPUT; then
+    print_header "9. SECURITY CONFIGURATION POSTURE"
+fi
+
+# Check SELinux
+selinux_status="disabled"
+selinux_mode="N/A"
+if command -v getenforce &>/dev/null; then
+    selinux_status="enabled"
+    selinux_mode=$(getenforce 2>/dev/null || echo "unknown")
+fi
+
+# Check firewall
+firewall_status="inactive"
+firewall_type="none"
+if systemctl is-active --quiet firewalld 2>/dev/null; then
+    firewall_status="active"
+    firewall_type="firewalld"
+elif systemctl is-active --quiet iptables 2>/dev/null; then
+    firewall_status="active"
+    firewall_type="iptables"
+elif systemctl is-active --quiet ufw 2>/dev/null; then
+    firewall_status="active"
+    firewall_type="ufw"
+fi
+
+# Check key kernel security parameters
+declare -A sysctl_checks=(
+    ["net.ipv4.conf.all.rp_filter"]="1 or 2"
+    ["net.ipv4.conf.all.accept_redirects"]="0"
+    ["net.ipv4.conf.all.send_redirects"]="0"
+    ["net.ipv4.tcp_syncookies"]="1"
+    ["net.ipv4.icmp_echo_ignore_broadcasts"]="1"
+)
+
+declare -A sysctl_values=()
+declare -a sysctl_issues=()
+
+for param in "${!sysctl_checks[@]}"; do
+    value=$(sysctl -n "$param" 2>/dev/null || echo "N/A")
+    sysctl_values["$param"]="$value"
+    expected="${sysctl_checks[$param]}"
+
+    # Check if value meets expectation
+    case "$param" in
+        *rp_filter)
+            if [[ "$value" != "1" ]] && [[ "$value" != "2" ]]; then
+                sysctl_issues+=("$param=$value (expected: $expected)")
+            fi
+            ;;
+        *)
+            if [[ "$value" != "${expected}" ]]; then
+                sysctl_issues+=("$param=$value (expected: $expected)")
+            fi
+            ;;
+    esac
+done
+
+# Check SSH configuration
+ssh_root_login="unknown"
+ssh_password_auth="unknown"
+if [[ -r /etc/ssh/sshd_config ]]; then
+    ssh_root_login=$(grep -E "^PermitRootLogin" /etc/ssh/sshd_config 2>/dev/null | awk '{print $2}' || echo "default")
+    ssh_password_auth=$(grep -E "^PasswordAuthentication" /etc/ssh/sshd_config 2>/dev/null | awk '{print $2}' || echo "default")
+fi
+
+if $JSON_OUTPUT; then
+    echo "  \"security_posture\": {"
+    echo "    \"selinux\": {"
+    echo "      \"status\": \"$selinux_status\","
+    echo "      \"mode\": \"$selinux_mode\""
+    echo "    },"
+    echo "    \"firewall\": {"
+    echo "      \"status\": \"$firewall_status\","
+    echo "      \"type\": \"$firewall_type\""
+    echo "    },"
+    echo "    \"kernel_hardening\": {"
+    first=true
+    for param in "${!sysctl_values[@]}"; do
+        $first || echo ","
+        first=false
+        printf '      "%s": "%s"' "$param" "${sysctl_values[$param]}"
+    done
+    echo ""
+    echo "    },"
+    echo "    \"ssh\": {"
+    echo "      \"permit_root_login\": \"${ssh_root_login:-default}\","
+    echo "      \"password_auth\": \"${ssh_password_auth:-default}\""
+    echo "    },"
+    echo "    \"issues\": [$(printf '"%s",' "${sysctl_issues[@]:-}" | sed 's/,$//')]"
+    echo "  },"
+else
+    echo ""
+    echo "SELinux:"
+    echo "  Status: $selinux_status"
+    echo "  Mode:   $selinux_mode"
+    if [[ "$selinux_mode" != "Enforcing" ]] && [[ "$selinux_status" == "enabled" ]]; then
+        add_finding "WARN" "SELinux is not in Enforcing mode (current: $selinux_mode)"
+    fi
+
+    echo ""
+    echo "Firewall:"
+    echo "  Status: $firewall_status"
+    echo "  Type:   $firewall_type"
+    if [[ "$firewall_status" != "active" ]]; then
+        add_finding "CRITICAL" "No active firewall detected"
+    fi
+
+    echo ""
+    echo "Kernel Security Parameters:"
+    printf "  %-45s %s\n" "PARAMETER" "VALUE"
+    print_divider 55
+    for param in "${!sysctl_values[@]}"; do
+        printf "  %-45s %s\n" "$param" "${sysctl_values[$param]}"
+    done
+
+    if [[ ${#sysctl_issues[@]} -gt 0 ]]; then
+        echo ""
+        echo "  Issues detected:"
+        for issue in "${sysctl_issues[@]}"; do
+            echo "    - $issue"
+            add_finding "WARN" "Kernel parameter: $issue"
+        done
+    fi
+
+    echo ""
+    echo "SSH Configuration:"
+    echo "  PermitRootLogin:      ${ssh_root_login:-default}"
+    echo "  PasswordAuthentication: ${ssh_password_auth:-default}"
+    if [[ "$ssh_root_login" == "yes" ]]; then
+        add_finding "WARN" "SSH root login is permitted"
+    fi
+fi
+
+# ----------------------------------------------------------------------------
+# 10. Findings Summary
 # ----------------------------------------------------------------------------
 
 exit_code=0
