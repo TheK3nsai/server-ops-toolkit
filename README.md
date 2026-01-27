@@ -104,7 +104,8 @@ Key variables:
 Edit `conf/allowed-ports.conf` to whitelist expected open ports:
 
 ```
-22/tcp      # SSH
+22022/tcp   # SSH (non-standard port)
+2222/tcp    # Forgejo SSH
 80/tcp      # HTTP
 443/tcp     # HTTPS
 ```
