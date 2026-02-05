@@ -155,7 +155,7 @@ if $JSON_OUTPUT; then
     "sudo_commands": ${#sudo_commands[@]},
     "root_logins": ${#root_logins[@]}
   },
-  "suspicious_ips": [$(printf '"%s",' "${suspicious_ips[@]:-}" | sed 's/,$//')],
+  "suspicious_ips": [$(if [[ ${#suspicious_ips[@]} -gt 0 ]]; then printf '"%s",' "${suspicious_ips[@]}" | sed 's/,$//'; fi)],
   "failed_users": {$(for u in "${!failed_by_user[@]}"; do printf '"%s":%d,' "$u" "${failed_by_user[$u]}"; done | sed 's/,$//')},
   "issues_found": $( $issues_found && echo "true" || echo "false" )
 }

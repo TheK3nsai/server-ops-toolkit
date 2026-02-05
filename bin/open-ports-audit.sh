@@ -140,8 +140,8 @@ if systemctl is-active --quiet firewalld; then
     # Get services and their ports
     while IFS= read -r service; do
         [[ -z "$service" ]] && continue
-        # Get ports for this service
-        service_ports=$(firewall-cmd --service="$service" --get-ports 2>/dev/null | tr ' ' '\n')
+        # Get ports for this service (may fail for some services, ignore errors)
+        service_ports=$(firewall-cmd --service="$service" --get-ports 2>/dev/null | tr ' ' '\n') || true
         for sp in $service_ports; do
             [[ -n "$sp" ]] && firewall_ports["$sp"]="service:$service"
         done
@@ -216,7 +216,7 @@ $(first=true; for p in "${!listening_ports[@]}"; do
     printf '    "%s": {"address": "%s", "process": "%s"}' "$p" "$addr" "$proc"
 done)
   },
-  "unexpected_ports": [$(printf '"%s",' "${!unexpected_ports[@]}" | sed 's/,$//')],
+  "unexpected_ports": [$(if [[ ${#unexpected_ports[@]} -gt 0 ]]; then printf '"%s",' "${!unexpected_ports[@]}" | sed 's/,$//'; fi)],
   "issues_found": $([ $issues_found -eq 1 ] && echo "true" || echo "false")
 }
 EOF

@@ -156,7 +156,7 @@ if $JSON_OUTPUT; then
     done
     echo ""
     echo "    ],"
-    echo "    \"locked\": [$(printf '"%s",' "${locked_users[@]:-}" | sed 's/,$//')],"
+    echo "    \"locked\": [$(if [[ ${#locked_users[@]} -gt 0 ]]; then printf '"%s",' "${locked_users[@]}" | sed 's/,$//'; fi)],"
     echo "    \"total_login_accounts\": ${#login_users[@]}"
     echo "  },"
 else
@@ -658,7 +658,7 @@ if $JSON_OUTPUT; then
     echo "      \"permit_root_login\": \"${ssh_root_login:-default}\","
     echo "      \"password_auth\": \"${ssh_password_auth:-default}\""
     echo "    },"
-    echo "    \"issues\": [$(printf '"%s",' "${sysctl_issues[@]:-}" | sed 's/,$//')]"
+    echo "    \"issues\": [$(if [[ ${#sysctl_issues[@]} -gt 0 ]]; then printf '"%s",' "${sysctl_issues[@]}" | sed 's/,$//'; fi)]"
     echo "  },"
 else
     echo ""

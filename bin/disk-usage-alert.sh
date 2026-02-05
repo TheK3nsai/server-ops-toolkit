@@ -137,13 +137,14 @@ fi
 get_large_dirs() {
     local mount="$1"
     local count="$2"
+    local result
 
     # Only scan actual filesystems, skip special mounts
     [[ "$mount" == "/" ]] || return
 
     # Find large directories with timeout, exclude special paths
     # Using timeout to prevent hanging on slow/large filesystems
-    timeout 30 du -xh --max-depth=2 "$mount" \
+    result=$(timeout 30 du -xh --max-depth=2 "$mount" \
         --exclude=/proc \
         --exclude=/sys \
         --exclude=/dev \
@@ -153,7 +154,13 @@ get_large_dirs() {
         2>/dev/null | \
         grep -vE "^0" | \
         sort -rh | \
-        head -n "$count" || echo "  Scan timed out or failed"
+        head -n "$count" 2>/dev/null) || true
+
+    if [[ -n "$result" ]]; then
+        echo "$result"
+    else
+        echo "  Scan timed out or failed"
+    fi
 }
 
 # Output results
@@ -177,8 +184,8 @@ for entry in "${fs_data[@]}"; do
         "$mount" "$fs" "$size" "$used" "$avail" "$percent" "$status"
 done)
   ],
-  "warnings": [$(printf '"%s",' "${warnings[@]:-}" | sed 's/,$//')],
-  "criticals": [$(printf '"%s",' "${criticals[@]:-}" | sed 's/,$//')]
+  "warnings": [$(if [[ ${#warnings[@]} -gt 0 ]]; then printf '"%s",' "${warnings[@]}" | sed 's/,$//'; fi)],
+  "criticals": [$(if [[ ${#criticals[@]} -gt 0 ]]; then printf '"%s",' "${criticals[@]}" | sed 's/,$//'; fi)]
 }
 EOF
 else

@@ -210,8 +210,8 @@ if $JSON_OUTPUT; then
     "no_healthcheck": ${#no_healthcheck[@]},
     "restarted": ${#restarted_containers[@]}
   },
-  "unhealthy": [$(printf '"%s",' "${unhealthy_containers[@]%%|*}" 2>/dev/null | sed 's/,$//')],
-  "exited": [$(printf '"%s",' "${exited_containers[@]%%|*}" 2>/dev/null | sed 's/,$//')],
+  "unhealthy": [$(if [[ ${#unhealthy_containers[@]} -gt 0 ]]; then printf '"%s",' "${unhealthy_containers[@]%%|*}" | sed 's/,$//'; fi)],
+  "exited": [$(if [[ ${#exited_containers[@]} -gt 0 ]]; then printf '"%s",' "${exited_containers[@]%%|*}" | sed 's/,$//'; fi)],
   "issues_found": $([ $issues_found -eq 1 ] && echo "true" || echo "false")
 }
 EOF

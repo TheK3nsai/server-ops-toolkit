@@ -89,7 +89,7 @@ fi
 # Handle unban request
 if [[ -n "$UNBAN_IP" ]]; then
     log_info "Attempting to unban $UNBAN_IP from all jails..."
-    jails=$(sudo fail2ban-client status | grep "Jail list:" | sed 's/.*Jail list:\s*//' | tr ',' '\n' | tr -d '[:space:]')
+    jails=$(sudo fail2ban-client status | grep "Jail list:" | sed 's/.*Jail list:\s*//' | tr ',' '\n' | tr -d ' \t')
 
     unbanned=false
     for jail in $jails; do
@@ -128,7 +128,7 @@ get_jail_info() {
 if [[ -n "$SPECIFIC_JAIL" ]]; then
     jails="$SPECIFIC_JAIL"
 else
-    jails=$(sudo fail2ban-client status | grep "Jail list:" | sed 's/.*Jail list:\s*//' | tr ',' '\n' | tr -d '[:space:]')
+    jails=$(sudo fail2ban-client status | grep "Jail list:" | sed 's/.*Jail list:\s*//' | tr ',' '\n' | tr -d ' \t')
 fi
 
 # Collect data
