@@ -92,13 +92,13 @@ while IFS='|' read -r name cpu mem_usage mem_perc net_io block_io pids; do
     cpu_num="${cpu%\%}"
     mem_num="${mem_perc%\%}"
 
-    # Check thresholds
+    # Check thresholds (integer comparison, strip decimal)
     alert=""
-    if (( $(echo "$cpu_num > $CPU_WARN_PERCENT" | bc -l 2>/dev/null || echo 0) )); then
+    if [[ ${cpu_num%.*} -gt $CPU_WARN_PERCENT ]]; then
         alert="cpu"
         issues_found=1
     fi
-    if (( $(echo "$mem_num > $MEM_WARN_PERCENT" | bc -l 2>/dev/null || echo 0) )); then
+    if [[ ${mem_num%.*} -gt $MEM_WARN_PERCENT ]]; then
         [[ -n "$alert" ]] && alert="${alert},mem" || alert="mem"
         issues_found=1
     fi

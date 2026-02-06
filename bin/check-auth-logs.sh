@@ -157,7 +157,7 @@ if $JSON_OUTPUT; then
   },
   "suspicious_ips": [$(if [[ ${#suspicious_ips[@]} -gt 0 ]]; then printf '"%s",' "${suspicious_ips[@]}" | sed 's/,$//'; fi)],
   "failed_users": {$(for u in "${!failed_by_user[@]}"; do printf '"%s":%d,' "$u" "${failed_by_user[$u]}"; done | sed 's/,$//')},
-  "issues_found": $( $issues_found && echo "true" || echo "false" )
+  "issues_found": $( [[ $issues_found -eq 1 ]] && echo "true" || echo "false" )
 }
 EOF
 else

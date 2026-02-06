@@ -73,6 +73,7 @@ All scripts support `--help` for usage details and `--json` for machine-readable
 | Script | Purpose | Cron Suggestion |
 |--------|---------|-----------------|
 | `disk-usage-alert.sh` | Filesystem usage with warning/critical thresholds | Every 6 hours |
+| `memory-swap-monitor.sh` | Memory/swap usage, top processes, OOM detection | Every 30 min |
 | `system-updates.sh` | Check for available dnf/yum updates | Daily |
 | `backup-configs.sh` | Backup system and Docker configuration files | Daily |
 
@@ -105,7 +106,6 @@ Edit `conf/allowed-ports.conf` to whitelist expected open ports:
 
 ```
 22022/tcp   # SSH (non-standard port)
-2222/tcp    # Forgejo SSH
 80/tcp      # HTTP
 443/tcp     # HTTPS
 ```

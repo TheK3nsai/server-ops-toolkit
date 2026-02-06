@@ -74,6 +74,7 @@ Scripts read configuration from `conf/.env`. Key variables:
 - `DOCKER_ROOT` - Path to Docker compose projects (default: /home/kensai/docker)
 - `ALERT_EMAIL` - Default email for notifications
 - `DISK_WARN_THRESHOLD`, `DISK_CRIT_THRESHOLD` - Disk usage alert thresholds
+- `MEM_WARN_THRESHOLD`, `MEM_CRIT_THRESHOLD`, `SWAP_WARN_THRESHOLD` - Memory alert thresholds
 - `BACKUP_RETENTION_DAYS` - Days to keep config backups
 - `UPTIME_KUMA_*_PUSH` - Push URLs for Uptime Kuma monitoring
 
@@ -88,6 +89,7 @@ Scripts read configuration from `conf/.env`. Key variables:
 | container-resource-report.sh | CPU/memory usage per container | No |
 | docker-cleanup.sh | Prune unused Docker resources | No |
 | disk-usage-alert.sh | Check filesystem usage against thresholds | No |
+| memory-swap-monitor.sh | Monitor memory/swap usage with OOM detection | No |
 | system-updates.sh | Check for available dnf/yum updates | No |
 | backup-configs.sh | Backup system and Docker configs | Partial |
 | login-history.sh | Report user login/logout history | Yes |
@@ -98,6 +100,11 @@ Scripts read configuration from `conf/.env`. Key variables:
 - `conf/allowed-ports.conf` - Whitelist of expected open ports (used by open-ports-audit.sh)
 - `conf/fail2ban-local.conf` - Fail2ban jail configuration template (copy to /etc/fail2ban/jail.d/)
 - `conf/logwatch.conf` - Logwatch configuration template
+- `/etc/docker/daemon.json` - Docker log rotation (json-file, 10m max, 3 files)
+
+## System Services
+
+- `dnf-automatic-install.timer` - Security-only auto-updates (via dnf-automatic)
 
 ## Cron Job Installation
 

@@ -165,8 +165,9 @@ while IFS= read -r line; do
     [[ -z "$line" ]] && continue
     user=$(echo "$line" | awk '{print $1}')
     tty=$(echo "$line" | awk '{print $2}')
-    ip=$(echo "$line" | awk '{print $3}')
-    login_time=$(echo "$line" | awk '{print $4, $5}')
+    login_time=$(echo "$line" | awk '{print $3, $4}')
+    ip=$(echo "$line" | awk '{print $5}' | tr -d '()')
+    [[ -z "$ip" ]] && ip="local"
 
     [[ -n "$FILTER_USER" ]] && [[ "$user" != "$FILTER_USER" ]] && continue
 

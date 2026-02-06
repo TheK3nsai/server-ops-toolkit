@@ -244,7 +244,8 @@ fi
 
 # Perform cleanup
 print_header "Performing Cleanup"
-space_before=$(docker system df --format '{{.Size}}' | head -1)
+docker_root=$(docker info --format '{{.DockerRootDir}}' 2>/dev/null || echo "/var/lib/docker")
+space_before_bytes=$(df -B1 --output=used "$docker_root" 2>/dev/null | tail -1 | tr -d ' ')
 
 # Remove stopped containers
 if $CLEAN_CONTAINERS && [[ ${#to_remove_containers[@]} -gt 0 ]]; then
@@ -293,9 +294,11 @@ while IFS='|' read -r type count size reclaimable; do
     printf "%-15s %10s %12s %15s\n" "$type" "$count" "$size" "$reclaimable"
 done < <(get_disk_usage)
 
-space_after=$(docker system df --format '{{.Size}}' | head -1)
-log_success "Cleanup complete"
-echo "Space before: $space_before"
-echo "Space after:  $space_after"
+space_after_bytes=$(df -B1 --output=used "$docker_root" 2>/dev/null | tail -1 | tr -d ' ')
+reclaimed_bytes=$((space_before_bytes - space_after_bytes))
+if [[ $reclaimed_bytes -lt 0 ]]; then
+    reclaimed_bytes=0
+fi
+log_success "Cleanup complete — reclaimed $(human_size $reclaimed_bytes)"
 
 exit 0

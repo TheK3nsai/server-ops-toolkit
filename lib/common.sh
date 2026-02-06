@@ -130,11 +130,17 @@ service_status() {
 human_size() {
     local bytes="$1"
     if [[ $bytes -ge 1073741824 ]]; then
-        printf "%.2f GB" "$(echo "scale=2; $bytes/1073741824" | bc)"
+        local whole=$((bytes / 1073741824))
+        local frac=$(( (bytes % 1073741824) * 100 / 1073741824 ))
+        printf "%d.%02d GB" "$whole" "$frac"
     elif [[ $bytes -ge 1048576 ]]; then
-        printf "%.2f MB" "$(echo "scale=2; $bytes/1048576" | bc)"
+        local whole=$((bytes / 1048576))
+        local frac=$(( (bytes % 1048576) * 100 / 1048576 ))
+        printf "%d.%02d MB" "$whole" "$frac"
     elif [[ $bytes -ge 1024 ]]; then
-        printf "%.2f KB" "$(echo "scale=2; $bytes/1024" | bc)"
+        local whole=$((bytes / 1024))
+        local frac=$(( (bytes % 1024) * 100 / 1024 ))
+        printf "%d.%02d KB" "$whole" "$frac"
     else
         printf "%d B" "$bytes"
     fi
