@@ -129,6 +129,9 @@ if $SECURITY_ONLY || ! $JSON_OUTPUT; then
 
             [[ -z "$advisory" ]] && continue
             [[ "$advisory" == "advisory" ]] && continue  # Skip header
+            # Skip repo name lines (e.g. "Docker CE Stable", "Rocky Linux 10")
+            # Real advisories match patterns like RLSA-2026:1234, CVE-2026-12345
+            [[ ! "$advisory" =~ -[0-9]{4}[:-] ]] && continue
 
             security_updates+=("${advisory}|${severity}|${pkg}")
         done <<< "$security_list"
