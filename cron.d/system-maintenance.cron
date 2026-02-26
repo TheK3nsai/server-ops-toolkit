@@ -4,11 +4,11 @@
 # Disk usage check every 6 hours
 0 */6 * * * /home/kensai/ops/bin/disk-usage-alert.sh >> /home/kensai/ops/logs/disk-usage-alert.log 2>&1
 
-# Check for system updates daily at 6 AM
-0 6 * * * /home/kensai/ops/bin/system-updates.sh >> /home/kensai/ops/logs/system-updates.log 2>&1
+# Check for system updates daily at 8 AM (after dnf-automatic 6:00-7:00 window)
+0 8 * * * /home/kensai/ops/bin/system-updates.sh >> /home/kensai/ops/logs/system-updates.log 2>&1
 
-# Weekly update check with notification (Mondays at 7 AM)
-0 7 * * 1 /home/kensai/ops/bin/system-updates.sh --json >> /home/kensai/ops/logs/system-updates.log 2>&1
+# Weekly update check with notification (Mondays at 8 AM)
+0 8 * * 1 /home/kensai/ops/bin/system-updates.sh --json >> /home/kensai/ops/logs/system-updates.log 2>&1
 
 # Daily config backup at 2 AM (compressed)
 0 2 * * * /home/kensai/ops/bin/backup-configs.sh --compress >> /home/kensai/ops/logs/backup-configs.log 2>&1

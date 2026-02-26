@@ -120,7 +120,7 @@ for container in $containers; do
         exited)
             # Check if it's a one-shot container (cron jobs, etc.)
             restart_policy=$(docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' "$container" 2>/dev/null) || restart_policy=""
-            if [[ "$restart_policy" == "no" ]] && [[ "$exit_code" == "0" ]]; then
+            if [[ "$exit_code" == "0" ]] && [[ "$restart_policy" == "no" || "$restart_policy" == "on-failure" ]]; then
                 # Completed successfully, likely a one-shot
                 no_healthcheck+=("${container}|${image}|exited-ok|${started}")
             else

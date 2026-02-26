@@ -55,7 +55,7 @@ SYSTEM_CONFIGS=(
     "/etc/resolv.conf"
 )
 
-# Docker-related paths (compose files and .env, not volumes)
+# Docker-related paths (compose files and configs, not volumes)
 DOCKER_CONFIGS=(
     "docker-compose.yml"
     "docker-compose.yaml"
@@ -63,8 +63,13 @@ DOCKER_CONFIGS=(
     "compose.yaml"
     ".env"
     "*.conf"
+    "*.yml"
+    "*.yaml"
+    "*.py"
     "config/"
-    "traefik/"
+    "grafana/"
+    "apache/"
+    "init-scripts/"
 )
 
 # Parse arguments

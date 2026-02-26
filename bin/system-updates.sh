@@ -140,10 +140,13 @@ fi
 
 # Check if reboot is required
 if $REBOOT_CHECK || ! $JSON_OUTPUT; then
-    if command -v needs-restarting &>/dev/null; then
-        if ! needs-restarting -r &>/dev/null; then
-            reboot_required=true
-        fi
+    # Prefer dnf subcommand (available on RHEL/Rocky without standalone binary)
+    nr_rc=0
+    dnf needs-restarting -r &>/dev/null 2>&1 || nr_rc=$?
+    if [[ $nr_rc -eq 0 ]]; then
+        : # no reboot needed
+    elif [[ $nr_rc -eq 1 ]]; then
+        reboot_required=true
     else
         # Fallback: check if running kernel matches installed
         installed_kernel=$(rpm -q kernel --last 2>/dev/null | head -1 | awk '{print $1}' | sed 's/kernel-//')
@@ -195,10 +198,10 @@ if ! $CHECK_ONLY && [[ $update_count -gt 0 ]]; then
     fi
 
     # Re-check if reboot needed after updates
-    if command -v needs-restarting &>/dev/null; then
-        if ! needs-restarting -r &>/dev/null; then
-            reboot_required=true
-        fi
+    nr_rc=0
+    dnf needs-restarting -r &>/dev/null 2>&1 || nr_rc=$?
+    if [[ $nr_rc -eq 1 ]]; then
+        reboot_required=true
     fi
 fi
 
@@ -289,8 +292,8 @@ else
     fi
 
     # Services needing restart
-    if command -v needs-restarting &>/dev/null && [[ $EUID -eq 0 ]]; then
-        services_restart=$(needs-restarting -s 2>/dev/null || true)
+    if [[ $EUID -eq 0 ]]; then
+        services_restart=$(dnf needs-restarting -s 2>/dev/null || true)
         if [[ -n "$services_restart" ]]; then
             print_header "Services Needing Restart"
             echo "$services_restart" | head -20
